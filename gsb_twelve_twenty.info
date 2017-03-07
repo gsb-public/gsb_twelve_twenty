@@ -1,0 +1,5 @@
+name = GSB 12Twenty
+description = The GSB 12Twenty module
+core = 7.x
+package = GSB
+
