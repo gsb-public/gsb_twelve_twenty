@@ -69,6 +69,7 @@
     alumni_cas_auth_login($next_url);
     if (user_is_logged_in() && $_REQUEST['xjst'] != "") {
         $url = "https://stanfordgsbapps.secure.force.com/core/services/apexrest/decodepgalumid?suid=".$_REQUEST['xjst'];
+        //$url = "https://stanfordgsbapps.secure.force.com/core/services/apexrest/decodepgalumid?suid=".$_REQUEST['xjst'];
         $return = drupal_http_request($url);
         if(isset($return->data)) {
           $user_data = json_decode($return->data);
@@ -91,11 +92,9 @@
        $url = $token_auth_url."&id=".$user->name;
        _gsb_twelve_twenty_token_auth($url);
     } 
-    else if($type == 'cas' && $user_data->username != "") {
-       //$user_data->username = "temp17";
-       //$sunet_id = explode("@", $user_data->email);
-       //$url = $token_auth_url."&id=".$sunet_id[0];
-       $url = $token_auth_url."&id=".$user_data->username;
+    else if($type == 'cas' && $user_data->loginname != "") {
+        //For alumni passing loginname  for authentication
+        $url = $token_auth_url."&id=".$user_data->loginname;
        _gsb_twelve_twenty_token_auth($url);
     }
   }
