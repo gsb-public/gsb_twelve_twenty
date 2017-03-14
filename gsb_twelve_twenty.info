@@ -1,5 +1,5 @@
 name = GSB 12Twenty
-description = The GSB 12Twenty module
 core = 7.x
-package = GSB
-
+package = Authentication
+description = "Provides authentication method for student and alumni user with 12twenty website."
+configure = admin/config/people/twelve-twenty

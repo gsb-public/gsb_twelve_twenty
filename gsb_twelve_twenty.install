@@ -14,4 +14,9 @@ function gsb_twelve_twenty_install() {
  * Implements hook_uninstall().
  */
 function gsb_twelve_twenty_uninstall() {
+
+ // Delete variables.
+  variable_del('twelve_twenty_token');
+  variable_del('twelve_twenty_token_auth_url');
+  variable_del('twelve_twenty_token_ret_url');
 }

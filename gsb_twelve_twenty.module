@@ -8,22 +8,28 @@
    * Implements hook_menu().
    */
   function gsb_twelve_twenty_menu() {
-    $items = array();
-    $items['12Twenty-student'] = array(
+     global $user;
+     $items = array();
+      $items['12Twenty-student'] = array(
       'title' => 'GSB 12Twenty Student Auth',
       'description' => 'GSB 12Twenty Student',
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array('gsb_twelve_twenty_check_simplesaml_auth'),
+      'page callback' => 'gsb_twelve_twenty_check_simplesaml_auth',
       'access callback' => TRUE,
-      'type' => MENU_CALLBACK,
-    );
-    $items['12Twenty-alumni'] = array(
+     );
+     $items['12Twenty-alumni'] = array(
       'title' => 'GSB 12Twenty Alumni Auth',
       'description' => 'GSB 12Twenty Alumni Auth',
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array('gsb_twelve_twenty_check_alumni_auth'),
+      'page callback' => 'gsb_twelve_twenty_check_alumni_auth',
       'access callback' => TRUE,
-      'type' => MENU_CALLBACK,
+     );
+    $items['admin/config/people/twelve-twenty'] = array(
+    'title' => 'Twelve Twenty Auth settings',
+    'description' => 'Configure Twelve Twenty Auth settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('gsb_twelve_twenty_admin_settings'),
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'gsb_twelve_twenty.admin.inc',
     );
     return $items;
   }
@@ -54,7 +60,8 @@
       }
     }
     if (simplesaml_auth_user_authenticated()) {
-      _gsb_twelve_twenty_token_gen('simplesaml');
+        //simplesaml_auth_manage_user_account($simplesaml_auth_object, TRUE);
+        _gsb_twelve_twenty_token_gen('simplesaml');
     }
     
   }
@@ -87,9 +94,10 @@
    */
   function _gsb_twelve_twenty_token_gen($type, $loginname=null) {
     global $user;
-    $token_key       = "9f8a8015d94f4c0bbb29509";
-    //$token_auth_url  = "https://business-gsb-stanford.sandbox-12twenty.com/SingleSignOn/generateAuthenticationToken?key=".$token_key;
-    $token_auth_url  = "https://business-gsb-stanford.sandbox-12twenty.com/SingleSignOn/generateAuthenticationToken?key=".$token_key;
+    //$token_key      = "9f8a8015d94f4c0bbb29509";
+    //$token_auth_url = "https://business-gsb-stanford.sandbox-12twenty.com/SingleSignOn/generateAuthenticationToken?key=".$token_key;
+    $token_key = variable_get('twelve_twenty_token');
+    $token_auth_url  = trim(variable_get('twelve_twenty_token_auth_url'))."?key=".$token_key;
     if ($type == 'simplesaml' && $user->init != "") {
        //For student passing name  for authentication
         $url = $token_auth_url."&id=".$user->init;
@@ -106,7 +114,7 @@
  */
   function _gsb_twelve_twenty_token_auth($token_auth_url=null) {
      //$token_red_url   = "https://business-gsb-stanford.sandbox-12twenty.com/SingleSignOn/authenticate?ssotoken=";
-     $token_red_url   = "https://business-gsb-stanford.sandbox-12twenty.com/SingleSignOn/authenticate?ssotoken=";
+     $token_red_url = trim(variable_get('twelve_twenty_token_ret_url'))."?ssotoken=";
      $session = curl_init();
      curl_setopt($session, CURLOPT_URL, $token_auth_url);
      curl_setopt($session, CURLOPT_SSL_VERIFYPEER, FALSE);
@@ -122,3 +130,4 @@
         drupal_goto( $token_red_url.$body, array('external' => TRUE));
      }
   }
+
