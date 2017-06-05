@@ -61,7 +61,11 @@
     }
     if (simplesaml_auth_user_authenticated()) {
         //simplesaml_auth_manage_user_account($simplesaml_auth_object, TRUE);
-        _gsb_twelve_twenty_token_gen('simplesaml');
+       if(!empty($attributes['urn:mace:dir:attribute-def:suUnivID'] ) )
+        $univid = "00".$attributes['urn:mace:dir:attribute-def:suUnivID'][0];
+       else
+        $univid = "";
+        _gsb_twelve_twenty_token_gen('simplesaml',$univid);
     }
     
   }
@@ -79,8 +83,11 @@
         $url = "https://stanfordgsbapps.secure.force.com/core/services/apexrest/decodepgalumid?suid=".$_REQUEST['xjst'];
         $return = drupal_http_request($url);
         if (isset($return->data)) {
-          $user_data = json_decode($return->data);
-          _gsb_twelve_twenty_token_gen('cas', $user_data->loginname);
+           $user_data = json_decode($return->data);
+           $loginname = "00".$user_data->suid;
+           $user->init = $loginname;
+           $user->mail = $user_data->email;
+           _gsb_twelve_twenty_token_gen('cas', $user->init);
         }
     } elseif (user_is_logged_in()) {
       if (isset($user->init) && $user->init != "") {
@@ -90,16 +97,17 @@
   }
 
   /**
-   * 12twenty Token generating url setting
+   * 12twenty Token generating url setting with parameter
    */
   function _gsb_twelve_twenty_token_gen($type, $loginname=null) {
     global $user;
-    //$token_key      = "9f8a8015d94f4c0bbb29509";
-    //$token_auth_url = "https://business-gsb-stanford.sandbox-12twenty.com/SingleSignOn/generateAuthenticationToken?key=".$token_key;
     $token_key = variable_get('twelve_twenty_token');
     $token_auth_url  = trim(variable_get('twelve_twenty_token_auth_url'))."?key=".$token_key;
-    if ($type == 'simplesaml' && $user->init != "") {
+    if ($type == 'simplesaml') {
        //For student passing name  for authentication
+      if($loginname != "")
+        $url = $token_auth_url."&id=".$loginname;
+      else
         $url = $token_auth_url."&id=".$user->init;
        _gsb_twelve_twenty_token_auth($url);
     } elseif ($type == 'cas' && $loginname != "") {
