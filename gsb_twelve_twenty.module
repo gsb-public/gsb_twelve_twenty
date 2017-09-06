@@ -85,6 +85,8 @@
         if (isset($return->data)) {
            $user_data = json_decode($return->data);
            $loginname = "00".$user_data->suid;
+           //for making the login id to 10 digits
+           $loginname = substr($loginname, -10);
            $user->init = $loginname;
            $user->mail = $user_data->email;
            _gsb_twelve_twenty_token_gen('cas', $user->init);
