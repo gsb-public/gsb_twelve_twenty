@@ -79,22 +79,24 @@
     $next_url = $base_url. '/' . current_path();
     $next_url = str_replace('http://', 'https://', $next_url);
     alumni_cas_auth_login($next_url);
+    $xjst = print_r($_REQUEST, true);
+    watchdog('CAS user xjst value', $xjst);
     if (user_is_logged_in() && isset($_REQUEST['xjst']) && $_REQUEST['xjst'] != "") {
         $url = "https://stanfordgsbapps.secure.force.com/core/services/apexrest/decodepgalumid?suid=".$_REQUEST['xjst'];
         $return = drupal_http_request($url);
         if (isset($return->data)) {
            $user_data = json_decode($return->data);
-           $loginname = "00".$user_data->suid;
+           $loginname = "000".$user_data->suid;
            //for making the login id to 10 digits
            $loginname = substr($loginname, -10);
            $user->init = $loginname;
            $user->mail = $user_data->email;
-           watchdog('CAS user Sunet ID', $loginname);
+           watchdog('CAS user Sunet ID condition 1', $loginname);
            _gsb_twelve_twenty_token_gen('cas', $user->init);
         }
     } elseif (user_is_logged_in()) {
       if (isset($user->init) && $user->init != "") {
-         watchdog('CAS user Sunet ID', $user->init);
+         watchdog('CAS user Sunet ID condition 2', $user->init);
          _gsb_twelve_twenty_token_gen('cas', $user->init);
       }
     }
