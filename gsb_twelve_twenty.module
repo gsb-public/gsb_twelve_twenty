@@ -96,6 +96,8 @@
         }
     } elseif (user_is_logged_in()) {
       if (isset($user->init) && $user->init != "") {
+         $user->init = "000".$user->init;
+         $user->init = substr($user->init, -10);
          watchdog('CAS user Sunet ID condition 2', $user->init);
          _gsb_twelve_twenty_token_gen('cas', $user->init);
       }
