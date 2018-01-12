@@ -81,25 +81,17 @@
     alumni_cas_auth_login($next_url);
     $xjst = print_r($_REQUEST, true);
     watchdog('CAS user xjst value', $xjst);
-    if (user_is_logged_in() && isset($_REQUEST['xjst']) && $_REQUEST['xjst'] != "") {
-        $url = "https://stanfordgsbapps.secure.force.com/core/services/apexrest/decodepgalumid?suid=".$_REQUEST['xjst'];
-        $return = drupal_http_request($url);
-        if (isset($return->data)) {
-           $user_data = json_decode($return->data);
-           $loginname = "000".$user_data->suid;
-           //for making the login id to 10 digits
-           $loginname = substr($loginname, -10);
-           $user->init = $loginname;
-           $user->mail = $user_data->email;
-           watchdog('CAS user Sunet ID condition 1', $loginname);
-           _gsb_twelve_twenty_token_gen('cas', $user->init);
-        }
-    } elseif (user_is_logged_in()) {
-      if (isset($user->init) && $user->init != "") {
-         $user->init = "000".$user->init;
-         $user->init = substr($user->init, -10);
-         watchdog('CAS user Sunet ID condition 2', $user->init);
-         _gsb_twelve_twenty_token_gen('cas', $user->init);
+    if (user_is_logged_in() && isset($_REQUEST['cas_perm2']) && $_REQUEST['cas_perm2'] != "") {
+      $data_split = explode("|", $_REQUEST['cas_perm2']);
+      $login_name = substr($data_split[0], 3);
+      $user_data = _alumni_cas_auth_salesforce_data($login_name,'loginname');
+      if(!empty($user_data) && $user_data->suid != "" ) {
+        $loginname = "000".$user_data->suid;
+        //for making the login id to 10 digits
+        $loginname = substr($loginname, -10);
+        $user->init = $loginname;
+        watchdog('CAS user Sunet ID', $loginname);
+        _gsb_twelve_twenty_token_gen('cas', $user->init);
       }
     }
   }
@@ -133,7 +125,7 @@
  */
   function _gsb_twelve_twenty_token_auth($token_auth_url=null) {
      //$token_red_url   = "https://business-gsb-stanford.sandbox-12twenty.com/SingleSignOn/authenticate?ssotoken=";
-     $token_red_url = trim(variable_get('twelve_twenty_token_ret_url'))."?ssotoken=";
+
      watchdog('12twenty token auth url', $token_auth_url);
      $session = curl_init();
      curl_setopt($session, CURLOPT_URL, $token_auth_url);
@@ -147,6 +139,7 @@
      $body = curl_exec($session);
      curl_close($session);
      if ($body != "") {
+        $token_red_url = trim(variable_get('twelve_twenty_token_ret_url'))."?ssotoken=";
         watchdog('12twenty token redirection url', $token_red_url.$body);
         drupal_goto( $token_red_url.$body, array('external' => TRUE));
      }
