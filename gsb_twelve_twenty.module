@@ -40,7 +40,9 @@
   function gsb_twelve_twenty_check_simplesaml_auth() {
     watchdog('at gsb_twelve_twenty_check_simplesaml_auth 0', '');
     $simplesaml_auth_object = simplesaml_auth_login_check(FALSE);
+    watchdog('at gsb_twelve_twenty_check_simplesaml_auth 0a', '');
     $attributes = $simplesaml_auth_object->getAttributes();
+    watchdog('at gsb_twelve_twenty_check_simplesaml_auth 0b', '');
     if (empty($attributes['urn:oid:1.3.6.1.4.1.5923.1.1.1.7'])) {
       watchdog('at gsb_twelve_twenty_check_simplesaml_auth 1', '');
       return false;
